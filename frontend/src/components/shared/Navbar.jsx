@@ -19,7 +19,7 @@ const Navbar = () => {
           <ul className="flex font-medium items-center gap-5">
             <li className="hover:border-b-2 hover:border-b-[#6A38C2] transition-all duration-10"><Link to="/">Home</Link></li>
             <li className="hover:border-b-2 hover:border-b-[#6A38C2] transition-all duration-10"><Link to="/jobs">Jobs</Link></li>
-            <li className="hover:border-b-2 hover:border-b-[#6A38C2] transition-all duration-10">Browse</li>
+            <li className="hover:border-b-2 hover:border-b-[#6A38C2] transition-all duration-10"><Link to="/browse">Browse</Link></li>
           </ul>
           {!user ? (
             <div className="flex items-center gap-2">
