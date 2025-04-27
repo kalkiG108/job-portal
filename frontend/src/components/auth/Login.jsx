@@ -11,6 +11,7 @@ import { toast } from 'sonner'
 import { useDispatch, useSelector } from 'react-redux'
 import { setLoading} from '@/redux/authSlice'
 import { Loader2 } from 'lucide-react'
+import { setUser } from '../../redux/authSlice'
 
 const Login = () => {
     const [input, setInput] = useState({
@@ -37,6 +38,7 @@ const Login = () => {
                 withCredentials: true,
             });
             if (res.data.success) {
+                dispatch(setUser(res.data.user));
                 navigate("/");
                 toast.success(res.data.message);
             }
@@ -60,7 +62,7 @@ const Login = () => {
                             value={input.email}
                             name="email"
                             onChange={changeEventHandler}
-                            placeholder="patel@gmail.com"
+                            placeholder="Enter a valid email address!"
                         />
                     </div>
 
@@ -71,7 +73,7 @@ const Login = () => {
                             value={input.password}
                             name="password"
                             onChange={changeEventHandler}
-                            placeholder="patel@gmail.com"
+                            placeholder="Enter a strong password!"
                         />
                     </div>
                     <div className='flex items-center justify-between'>
