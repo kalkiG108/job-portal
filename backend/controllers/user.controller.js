@@ -1,11 +1,14 @@
 import { User } from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import getDataUri from "../utils/datauri.js";
+import cloudinary from "../utils/cloudinary.js";
 
 export const register = async (req, res) => {
   try {
-    const { fullname, email, phoneNumber, password, role } = req.body;
+    const { fullname, email, phoneNumber, password, role, profile } = req.body;
 
+    // Check for mandatory fields
     if (!fullname || !email || !phoneNumber || !password || !role) {
       return res.status(400).json({
         message: "Something is missing",
@@ -13,21 +16,46 @@ export const register = async (req, res) => {
       });
     }
 
+    // Handle optional `profile` attributes
+    const bio = profile?.bio || ""; // Default to an empty string if not provided
+    const skills = profile?.skills ? profile.skills.split(",") : []; // Convert skills to an array
+    const resume = profile?.resume || ""; // Google Drive link for the resume
+
+    // Handle file upload for `profilePhoto` (if provided)
+    let profilePhotoUrl = "";
+    if (req.file) {
+      const fileUri = getDataUri(req.file);
+      const cloudResponse = await cloudinary.uploader.upload(fileUri.content, {
+        folder: "profile_photos", // Organize files into a folder
+      });
+      profilePhotoUrl = cloudResponse.secure_url;
+    }
+
+    // Check if the user already exists
     const user = await User.findOne({ email });
     if (user) {
       return res.status(400).json({
-        message: "User already exist with this email.",
+        message: "User already exists with this email.",
         success: false,
       });
     }
+
+    // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Create the user
     await User.create({
       fullname,
       email,
       phoneNumber,
       password: hashedPassword,
       role,
+      profile: {
+        bio,
+        skills,
+        resume, // Save the Google Drive link
+        profilePhoto: profilePhotoUrl, // Save the Cloudinary URL for the profile photo
+      },
     });
 
     return res.status(201).json({
@@ -36,6 +64,10 @@ export const register = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
+    return res.status(500).json({
+      message: "Server error",
+      success: false,
+    });
   }
 };
 export const login = async (req, res) => {
@@ -114,11 +146,17 @@ export const logout = async (req, res) => {
 };
 export const updateProfile = async (req, res) => {
   try {
-    const { fullname, email, phoneNumber, bio, skills } = req.body;
+    const { fullname, email, phoneNumber, bio, skills, resume } = req.body;
 
-    const file = req.file;
-
-    // cloudinary will come here
+    // Handle file upload for `profilePhoto` (if provided)
+    let profilePhotoUrl = "";
+    if (req.file) {
+      const fileUri = getDataUri(req.file);
+      const cloudResponse = await cloudinary.uploader.upload(fileUri.content, {
+        folder: "profile_photos", // Organize files into a folder
+      });
+      profilePhotoUrl = cloudResponse.secure_url;
+    }
 
     let skillsArray;
     if (skills) {
@@ -139,8 +177,8 @@ export const updateProfile = async (req, res) => {
     if (phoneNumber) user.phoneNumber = phoneNumber;
     if (bio) user.profile.bio = bio;
     if (skills) user.profile.skills = skillsArray;
-
-    // resume comes later here...
+    if (resume) user.profile.resume = resume; // Save the Google Drive link
+    if (profilePhotoUrl) user.profile.profilePhoto = profilePhotoUrl; // Save the Cloudinary URL for the profile photo
 
     await user.save();
 
