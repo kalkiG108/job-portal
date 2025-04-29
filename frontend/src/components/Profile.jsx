@@ -7,11 +7,11 @@ import { Badge } from "./ui/badge";
 import { Label } from "./ui/label";
 import AppliedJobTable from "./AppliedJobTable";
 import UpdateProfileDialog from "./UpdateProfileDialog";
+import useGetAppliedJobs from '@/hooks/useGetAppliedJobs'
 import { useSelector } from "react-redux";
 
-const isResume = true;
-
 const Profile = () => {
+  useGetAppliedJobs();
   const [open, setOpen] = useState(false);
   const { user } = useSelector((store) => store.auth);
   return (
@@ -67,7 +67,7 @@ const Profile = () => {
         </div>
         <div className="grid w-full max-w-sm items-center gap-1.5">
           <Label className="text-md font-bold">Resume</Label>
-          {isResume ? (
+          {user?.profile?.resume !== "" ? (
             <a
               target="blank"
               href={user?.profile?.resume}
