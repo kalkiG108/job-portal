@@ -50,7 +50,6 @@ const UpdateProfileDialog = ({ open, setOpen }) => {
     formData.append("skills", input.skills);
     formData.append("resume", input.resume); // Google Drive link
     if (input.profilePhoto) {
-      console.log("profilePhoto received!");
       formData.append("file", input.profilePhoto); // Profile photo file
     }
     try {
@@ -76,7 +75,6 @@ const UpdateProfileDialog = ({ open, setOpen }) => {
       setLoading(false);
     }
     setOpen(false);
-    console.log(input);
   };
 
   return (
